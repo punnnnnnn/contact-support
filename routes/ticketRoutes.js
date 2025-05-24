@@ -1,5 +1,10 @@
 import express from "express";
-const { getTickets, getTicketById, createTicket, updateTicketStatus } = require("../controllers/ticketController");
+import {
+  getTickets,
+  getTicketById,
+  createTicket,
+  updateTicketStatus,
+} from "../controllers/ticketController.js";
 
 const router = express.Router();
 

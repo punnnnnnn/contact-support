@@ -1,21 +1,22 @@
 import Message from "../models/Message.js";
 
-export const getMessagesByTicket = async (req, res) => {
+// GET Messages
+export const getMessages = async (req, res) => {
   try {
-    const messages = await Message.find({ ticketId: req.params.ticketId }).sort({ date: 1 });
+    const messages = await Message.find().sort({ date: -1 });
     res.json(messages);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
-export const sendMessage = async (req, res) => {
-  const { ticketId, sender, text, image } = req.body;
-  const newMessage = new Message({ ticketId, sender, text, image });
+// POST Message
+export const createMessage = async (req, res) => {
   try {
-    const savedMessage = await newMessage.save();
-    res.status(201).json(savedMessage);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+    const message = new Message(req.body);
+    const saved = await message.save();
+    res.status(201).json(saved);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 };

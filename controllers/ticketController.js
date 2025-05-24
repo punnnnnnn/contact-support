@@ -1,72 +1,48 @@
-const Ticket = require('../models/Ticket');
-const fs = require('fs');
-const path = require('path');
+import Ticket from "../models/Ticket.js";
 
-// Create a new ticket
-exports.createTicket = async (req, res) => {
+// GET Tickets
+export const getTickets = async (req, res) => {
   try {
-    const { subject, description, department } = req.body;
-
-    let imageUrl = null;
-    if (req.file) {
-      imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
-    }
-
-    const newTicket = new Ticket({
-      subject,
-      description,
-      department,
-      image: imageUrl,
-    });
-
-    const savedTicket = await newTicket.save();
-    res.status(201).json(savedTicket);
-  } catch (error) {
-    console.error('Error creating ticket:', error);
-    res.status(500).json({ error: 'Failed to create ticket' });
-  }
-};
-
-// Get all tickets (latest first)
-exports.getTickets = async (req, res) => {
-  try {
-    const tickets = await Ticket.find().sort({ createdAt: -1 });
+    const tickets = await Ticket.find().sort({ date: -1 });
     res.json(tickets);
   } catch (error) {
-    console.error('Error fetching tickets:', error);
-    res.status(500).json({ error: 'Failed to fetch tickets' });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Get a ticket by ID
-exports.getTicketById = async (req, res) => {
+// GET Ticket by ID
+export const getTicketById = async (req, res) => {
   try {
     const ticket = await Ticket.findById(req.params.id);
-    if (!ticket) {
-      return res.status(404).json({ error: 'Ticket not found' });
-    }
+    if (!ticket) return res.status(404).json({ message: "Ticket not found" });
     res.json(ticket);
   } catch (error) {
-    console.error('Error fetching ticket by ID:', error);
-    res.status(500).json({ error: 'Failed to fetch ticket' });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Update ticket status (OPEN or CLOSED)
-exports.updateTicketStatus = async (req, res) => {
+// POST Ticket
+export const createTicket = async (req, res) => {
   try {
-    const { status } = req.body;
-    const ticket = await Ticket.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-    );
-    if (!ticket) {
-      return res.status(404).json({ error: 'Ticket not found' });
-    }
+    const ticket = new Ticket(req.body);
+    const saved = await ticket.save();
+    res.status(201).json(saved);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// PUT Update Ticket Status
+export const updateTicketStatus = async (req, res) => {
+  try {
+    const ticket = await Ticket.findById(req.params.id);
+    if (!ticket) return res.status(404).json({ message: "Ticket not found" });
+
+    ticket.status = req.body.status;
+    await ticket.save();
+
     res.json(ticket);
   } catch (error) {
-    console.error('Error updating ticket status:', error);
-    res.status(500).json({ error: 'Failed to update status' });
+    res.status(400).json({ error: error.message });
   }
 };
